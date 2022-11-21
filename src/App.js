@@ -1,47 +1,69 @@
 import { Component } from 'react';
-
-import logo from './logo.svg';
 import './App.css';
 
 
-
 class App extends Component {
-  constructor() {
+  constructor() {   //runs first before anything - initialize the state
     super();
 
     this.state = {
-      name: {firstName: 'Chris', lastName: 'Knudsvig'},
-      company: 'ZTM',
+       monsters: [],
+       searchField: ''
     };
+    console.log('constructor');
   }
 
-  render() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-         Hi { this.state.name.firstName } { this.state.name.lastName }, I work at {this.state.company}
-        </p>
-       <button onClick={() => {
-        this.setState(
-          () => {
-            return {
-              name: { firstName: 'Ellen', lastName: 'Clark' },
-            };
-          },
-          () => {
-            console.log(this.state);
-          }
-        );
-       }}
-       >
-       Change Name
-       </button>
-      </header>
-    </div>
-  );
+  componentDidMount() {  //only happens once throughout a components life, when it renders, then runs after constructor, and after rander, actually mounting to DOM
+    console.log('componentDidMount');
+    fetch('https://jsonplaceholder.typicode.com/users')
+    .then(response => response.json())
+    .then((users) => this.setState(() => { //once set state gets called, render method gets called again 
+      return {monsters: users}
+    },
+    () => {
+      console.log(this.state);
+    }
+    ));
+  }
+
+  onSearchChange = (event) => {
+    const searchField = event.target.value.toLocaleLowerCase();
+    this.setState(() => {
+      return { searchField };
+      });
+  }
+
+  render() {  //runs next - determins what to show - template of the html - dictates UI for component 
+    console.log('render')
+
+    const { monsters, searchField } = this.state
+    const { onSearchChange } = this;
+
+    const filteredMonsters = monsters.filter((monster) => {
+      return monster.name.toLocaleLowerCase().includes(searchField);
+    });
+
+    return (
+      <div className="App">
+        <input 
+        className='search-box' 
+        type='search' 
+        placeholder='search monsters'
+        onChange={ onSearchChange }
+        />
+
+        {filteredMonsters.map((monster) => {
+          return (
+          <div key={monster.id}>
+            <h1>{monster.name}</h1>
+          </div>
+          );
+        })}
+      </div>
+    );
   }
 }
 
+
 export default App;
+
